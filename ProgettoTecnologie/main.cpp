@@ -47,9 +47,6 @@ int main()
 		DispatchMessage(&msg);
 	}
 
-	// Remove the mouse hook when the application stops running
-	UnhookWindowsHookEx(mouseHook);
-
 	UnhookWindowsHookEx(g_hook);
 
 	return ERROR_SUCCESS;
