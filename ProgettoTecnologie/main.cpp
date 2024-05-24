@@ -23,8 +23,6 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 		int vkCode = pKeyboardStruct->vkCode;
 
-		MessageBox(NULL, (LPCWSTR)(char)vkCode, L"Titolo", 1);
-
 		// if the key is a letter, we can convert it to a char
 		if (vkCode >= 0x41 && vkCode <= 0x5A)
 		{
