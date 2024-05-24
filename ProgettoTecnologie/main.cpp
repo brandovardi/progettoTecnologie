@@ -9,7 +9,7 @@ HHOOK g_hook;
 HHOOK mouseHook;
 
 // Keyboard hook
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
 	{
@@ -17,15 +17,26 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 		bool isShiftPressed = ((GetKeyState(VK_LSHIFT) & 0x8000) != 0) || ((GetKeyState(VK_RSHIFT) & 0x8000) != 0);
 		bool isCapsLockActive = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
-
-		bool isCtrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-		bool isAltPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
+		bool isCtrlPressed = ((GetKeyState(VK_LCONTROL) & 0x8000) != 0) || ((GetKeyState(VK_RCONTROL) & 0x8000) != 0);
+		bool isNumLockActive = ((GetKeyState(VK_NUMLOCK) & 1) != 0);
+		bool isAltPressed = ((GetKeyState(VK_LMENU) & 0x8000) != 0 || (GetKeyState(VK_RMENU) & 0x8000) != 0);
 
 		int vkCode = pKeyboardStruct->vkCode;
 
 		MessageBox(NULL, (LPCWSTR)(char)vkCode, L"Titolo", 1);
 
-		std::cout << vkCode << std::endl;
+		// if the key is a letter, we can convert it to a char
+		if (vkCode >= 0x41 && vkCode <= 0x5A)
+		{
+			char c = static_cast<char>(vkCode);
+			std::cout << c << std::endl;
+		}
+		else
+		{
+			// if the key is not a letter, we can convert it to a string
+			std::string key = std::to_string(vkCode);
+			std::cout << key << std::endl;
+		}
 
 	}
 	// return control to the Operating System
