@@ -89,7 +89,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			message = std::toupper(vkCode);
 		}
 		// checking the numbers (and the numbers of the numeric keypad)
-		else if (((vkCode >= VK_0 && vkCode <= VK_9) || isNumLockActive && (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9)) && !isShiftPressed)
+		else if (((vkCode >= VK_0 && vkCode <= VK_9) || (isNumLockActive && (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9))) && !isShiftPressed)
 		{
 			// controllo singolarmente i numeri del tastierino numerico (a destra della tastiera)
 			switch (vkCode)
