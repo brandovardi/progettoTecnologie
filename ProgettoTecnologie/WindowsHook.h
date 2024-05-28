@@ -6,10 +6,15 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <sstream>
+#include <iomanip>
+#include <iphlpapi.h>
 
 #include "include/curl/curl.h"
 
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
+#pragma comment(lib,"ws2_32.lib") // ws2_32.dll windows' library
+#pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
 
 #define VK_0	0x30	// '0'
 #define VK_1	0x31	// '1'

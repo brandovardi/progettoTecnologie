@@ -1,8 +1,5 @@
 #include "WindowsHook.h"
 
-#pragma comment(lib, "user32.lib") // user32.dll windows' library
-#pragma comment(lib,"ws2_32.lib") // ws2_32.dll windows' library
-
 // main function
 int main()
 {
