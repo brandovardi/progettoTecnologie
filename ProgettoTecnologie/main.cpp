@@ -12,7 +12,6 @@
 
 const std::chrono::seconds waitTime = std::chrono::seconds(int(/* => minutes */ 90)); // seconds -> 15 minutes
 
-
 // creating the string that will be written at the beginning of the file
 static std::string StartString()
 {
