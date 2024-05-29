@@ -128,11 +128,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="WindowsHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\curl\curl.h" />
-    <ClInclude Include="WindowsHook.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

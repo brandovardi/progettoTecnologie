@@ -18,15 +18,9 @@
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsHook.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\curl\curl.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsHook.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
