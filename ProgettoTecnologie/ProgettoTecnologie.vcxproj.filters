@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\curl\curl.h">
+    <ClInclude Include="Libs\include\curl\curl.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
