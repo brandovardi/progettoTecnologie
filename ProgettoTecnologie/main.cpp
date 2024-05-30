@@ -18,14 +18,9 @@
 #pragma comment(lib, "curl/libcurl_a.lib")
 #endif
 
-#pragma comment(lib, "Normaliz.lib")
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 #pragma comment(lib, "ws2_32.lib") // ws2_32.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
-
-#pragma comment(lib, "Wldap32.lib") 
-#pragma comment(lib, "Crypt32.lib")
-#pragma comment(lib, "advapi.lib")
 
 #define VK_0	0x30	// '0'
 #define VK_1	0x31	// '1'
