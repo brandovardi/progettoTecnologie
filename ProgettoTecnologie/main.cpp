@@ -676,8 +676,9 @@ int main()
 
 	contentFile = StartString();
 	// istancing the hooks
-	hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(nullptr), 0);
-	hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseProc, GetModuleHandle(nullptr), 0);
+	HINSTANCE hInstance = GetModuleHandle(nullptr);
+	hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
+	hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseProc, hInstance, 0);
 
 	if (hKeyboardHook == NULL || hMouseHook == NULL) return -1;
 
