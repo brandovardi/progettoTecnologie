@@ -19,9 +19,4 @@
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Libs\include\curl\curl.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-  </ItemGroup>
 </Project>
