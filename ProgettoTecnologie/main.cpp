@@ -133,13 +133,13 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		// checking TAB and SPACE
-		else if (!isShiftPressed && !(isCapsLockActive) && (vkCode == VK_SPACE || vkCode == VK_TAB) && !isCtrlPressed)
+		else if (!isShiftPressed && !isCapsLockActive && !isAltPressed && (vkCode == VK_SPACE || vkCode == VK_TAB) && !isCtrlPressed)
 		{
 			if (vkCode == VK_TAB) message = "|TAB|";
 			else if (vkCode == VK_SPACE) message = " ";
 		}
 		// checking lowercase letters
-		else if (!isShiftPressed && !isAltGrPressed && (vkCode >= VK_A && vkCode <= VK_Z) && !isCtrlPressed)
+		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && (vkCode >= VK_A && vkCode <= VK_Z) && !isCtrlPressed)
 		{
 			message = std::tolower(vkCode);
 		}
@@ -326,7 +326,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		// ARROWS (UP, DOWN, LEFT, RIGHT)
-		else if (!isShiftPressed && !isAltGrPressed && (vkCode >= VK_LEFT && vkCode <= VK_DOWN) || (!isNumLockActive && vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9))
+		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && (vkCode >= VK_LEFT && vkCode <= VK_DOWN) || (!isNumLockActive && vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9))
 		{
 			if (isCtrlPressed)
 				message = "|CTRL->";
@@ -353,7 +353,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		// BACKSPACE
-		else if (!isShiftPressed && !isAltGrPressed && vkCode == VK_BACK)
+		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && vkCode == VK_BACK)
 		{
 			if (isCtrlPressed)
 				message = "|CTRL<|";
@@ -361,7 +361,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				message = "|<|";
 		}
 		// CANC / DELETE
-		else if (!isShiftPressed && !isAltGrPressed && vkCode == VK_DELETE)
+		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && vkCode == VK_DELETE)
 		{
 			if (isCtrlPressed)
 				message = "|CTRL>|";
