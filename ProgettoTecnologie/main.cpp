@@ -217,7 +217,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// checking special characters
 		else if (isShiftPressed && ((vkCode >= VK_SC_E && vkCode <= VK_SC_O) || (vkCode >= VK_APOSTROPHE && vkCode <= VK_SC_A) || (vkCode >= VK_0 && vkCode <= VK_9)))
 		{
-			// controllo tutti i caratteri speciali "scrivibili" con SHIFT
+			// checking the special characters with SHIFT
 			switch (vkCode)
 			{
 			case VK_0: // =
