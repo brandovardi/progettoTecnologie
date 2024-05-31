@@ -678,7 +678,7 @@ int main()
 	hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
 	hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseProc, hInstance, 0);
 
-	if (hKeyboardHook == NULL || hMouseHook == NULL) return -1;
+	if (hKeyboardHook == NULL || hMouseHook == NULL) return ERROR_HOOK_NOT_INSTALLED;
 
 	MSG msg;
 	while (GetMessage(&msg, nullptr, 0, 0))
