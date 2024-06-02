@@ -21,8 +21,7 @@
 
 // user32 for the keyboard hook and the mouse hook
 #pragma comment(lib, "user32.lib") // user32.dll windows' library
-// ws2_32 for the network functions
-#pragma comment(lib, "ws2_32.lib") // ws2_32.dll windows' library
+
 // all these are for http requests and libcurl functions
 #pragma comment(lib, "normaliz.lib") // normaliz.dll windows' library
 #pragma comment(lib, "iphlpapi.lib") // iphlpapi.dll windows' library
