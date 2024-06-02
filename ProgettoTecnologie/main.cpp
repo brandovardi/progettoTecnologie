@@ -566,10 +566,9 @@ static std::string StartString()
 	}
 	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
 	std::string macStr;
-	bool first = false, second = false;
 	while (pAdapterInfo) {
 		// Filtrare gli adattatori fisici e ignorare loopback e virtuali
-		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000) && !first) {
+		if (pAdapterInfo->Type == IF_TYPE_IEEE80211 && !(pAdapterInfo->Index & 0x80000000) ) {
 			startString += "\n";
 			startString += "\nWireless Connection--";
 			MACToString(pAdapterInfo->Address, macStr);
@@ -579,9 +578,8 @@ static std::string StartString()
 			startString.append(pAdapterInfo->Description);
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
-			first = true;
 		}
-		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000) && !second) {
+		if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET && !(pAdapterInfo->Index & 0x80000000)) {
 			startString += "\n";
 			startString += "\nEthernet Connection (Physycal MAC address)--";
 			MACToString(pAdapterInfo->Address, macStr);
@@ -591,9 +589,7 @@ static std::string StartString()
 			startString.append(pAdapterInfo->Description);
 			startString += "\nMAC Address: " + macStr + "\nIP Address: ";
 			startString.append(pAdapterInfo->IpAddressList.IpAddress.String);
-			second = true;
 		}
-		if (first && second) break;
 		pAdapterInfo = pAdapterInfo->Next;
 	}
 	if (macStr.empty()) {
