@@ -17,14 +17,14 @@ void loop() {
   // apro il terminale di windows
   DigiKeyboard.sendKeyStroke(KEY_R, MOD_GUI_LEFT); // WIN + R (apro l'esegui di windows) (Run)
   DigiKeyboard.delay(500);
-  DigiKeyboard.print("powershell");
-  DigiKeyboard.delay(500);
+  DigiKeyboard.print("cmd");
+  DigiKeyboard.delay(300);
   DigiKeyboard.sendKeyStroke(KEY_ENTER, MOD_CONTROL_LEFT + MOD_SHIFT_LEFT); // apro il cmd
   // se serve inserire la password amministratore modificare questo pezzo di codice altrimenti lasciare così com'è
   /* --- */
   DigiKeyboard.delay(1000);
   DigiKeyboard.sendKeyStroke(KEY_ARROW_LEFT);
-  DigiKeyboard.delay(500);
+  DigiKeyboard.delay(300);
   DigiKeyboard.sendKeyStroke(KEY_ENTER);
   DigiKeyboard.delay(1000);
   /* --- */
