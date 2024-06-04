@@ -1,14 +1,5 @@
 #include "DigiKeyboardIT.h"
 
-// "C:\Users\brand\AppData\Local\Arduino15\packages\digistump\hardware\avr\1.6.7\libraries\DigisparkKeyboard\DigiKeyboardIT.h"
-
-/*
-* Viene copiata la cartella di Python v3.11 dentro il disco C: "C:\Python\Python311\"
-* Il percorso dova verrà salvato il keylogger è il seguente -> "C:\ProgramData\Microsoft\Windows\DeviceSync"
-* Poi verrà creata la seguente variabile di sistema -> "C:\Python\Python311"
-* infine viene creata la task dal task scheduler per poter avviare l'eseguibile ogni volta che un qualsiasi utente entra nel PC
-*/
-
 void setup() {
   pinMode(1, OUTPUT);
 }
