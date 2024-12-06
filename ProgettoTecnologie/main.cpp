@@ -423,18 +423,18 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		}
 
 		if (vkCode == VK_ESCAPE			// ESC
-			|| vkCode == VK_F1			// F1
-			|| vkCode == VK_F2			// F2
-			|| vkCode == VK_F3			// F3
-			|| vkCode == VK_F4			// F4
-			|| vkCode == VK_F5			// F5
-			|| vkCode == VK_F6			// F6
-			|| vkCode == VK_F7			// F7
-			|| vkCode == VK_F8			// F8
-			|| vkCode == VK_F9			// F9
-			|| vkCode == VK_F10			// F10
-			|| vkCode == VK_F11			// F11
-			|| vkCode == VK_F12			// F12
+			|| vkCode == VK_F1		// F1
+			|| vkCode == VK_F2		// F2
+			|| vkCode == VK_F3		// F3
+			|| vkCode == VK_F4		// F4
+			|| vkCode == VK_F5		// F5
+			|| vkCode == VK_F6		// F6
+			|| vkCode == VK_F7		// F7
+			|| vkCode == VK_F8		// F8
+			|| vkCode == VK_F9		// F9
+			|| vkCode == VK_F10		// F10
+			|| vkCode == VK_F11		// F11
+			|| vkCode == VK_F12		// F12
 			|| vkCode == VK_CAPITAL		// CAPS LOCK
 			|| vkCode == VK_LSHIFT		// LSHIFT
 			|| vkCode == VK_RSHIFT		// RSHIFT
